@@ -1,0 +1,221 @@
+<html>
+
+  <head>
+    <style>
+      body{ margin: 0px; }
+    </style>
+  </head>
+
+  <body>
+
+    <script src="lib/three.min.js">             </script>
+    <script src="lib/jquery.min.js">            </script>
+    <script src="lib/TrackballControls.js">     </script>
+    <script src="lib/SubdivisionModifier.js">   </script>
+    <script src="lib/BinaryLoader.js">   </script>
+    <script src="lib/Tween.js">   </script>
+    
+    <script src="../ShaderLoader.js"></script>
+
+    <script>
+
+
+
+      var matcap = THREE.ImageUtils.loadTexture('img/rough-aluminium.jpg');
+
+      var uniforms = {
+
+        t_matcap:{ type:"t" , value: matcap }
+
+      }
+
+      var camera, renderer, scene , controls;
+      
+      var vs, fs;
+
+      var geometry, material , light;
+
+      var inside = false;
+
+      var loader = new THREE.BinaryLoader( true );
+
+      var target = new THREE.Mesh( 
+        new THREE.IcosahedronGeometry( 10 , 0 ) , 
+        new THREE.MeshBasicMaterial() 
+      );
+     
+  
+      var shaders = new ShaderLoader( '../shaders' , '../shaderChunks'   );
+
+      shaders.shaderSetLoaded = function(){
+        init();
+        animate();
+      }
+
+      shaders.load( 'vs-rainbow' , 'rainbow' , 'vertex' );
+      shaders.load( 'fs-rainbow' , 'rainbow' , 'fragment' );
+
+      function init(){
+
+        loader.load( 'lucy/Lucy100k_bin.js', function ( geometry, materials ) {
+
+          console.log( geometry );
+          console.log( materials );
+
+          geometry.computeFaceNormals();
+          geometry.computeVertexNormals();
+
+          var mesh = new THREE.Mesh( geometry, new THREE.MeshNormalMaterial({
+           shading: THREE.SmoothShading  
+          }) );
+
+          mesh.position.set(-232.231,-729.8, -237.76 ) 
+
+          scene.add( mesh );
+
+
+
+        });
+
+
+        
+
+
+
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+
+        camera = new THREE.PerspectiveCamera( 65 , w/h , .1 , 2000 );
+        camera.position.z = 1000;
+
+        controls = new THREE.TrackballControls( camera );
+        scene = new THREE.Scene();
+
+        
+
+
+
+        var path = "img/skybox/";
+        var format = '.jpg';
+        var urls = [
+            path + 'px' + format, path + 'nx' + format,
+            path + 'py' + format, path + 'ny' + format,
+            path + 'pz' + format, path + 'nz' + format
+        ];
+
+        var reflectionCube = THREE.ImageUtils.loadTextureCube( urls );
+        reflectionCube.format = THREE.RGBFormat;
+
+        console.log( reflectionCube );
+
+        var shader = THREE.ShaderLib[ "cube" ];
+        shader.uniforms[ "tCube" ].value = reflectionCube;
+
+        var material = new THREE.ShaderMaterial( {
+
+            fragmentShader: shader.fragmentShader,
+            vertexShader: shader.vertexShader,
+            uniforms: shader.uniforms,
+          //  depthWrite: false,
+            side: THREE.BackSide
+
+        } ),
+
+        mesh = new THREE.Mesh( new THREE.BoxGeometry( 25, 25, 25 ), material );
+        scene.add( mesh );
+
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        window.addEventListener( 'keydown'  ,onKeyDown , false );
+
+        document.body.appendChild( renderer.domElement );
+
+      }
+
+      function animate(){
+
+        TWEEN.update();
+
+        controls.update();
+        camera.lookAt( target.position );
+        requestAnimationFrame( animate );
+        renderer.render( scene , camera );
+      }
+
+      //{x: 186.59076430219278, y: 1390.9358935053065, z: 536.3535237924946}
+     // {x: 232.2313160155365, y: 729.8016604755636, z: 237.76345971439508,
+      function tweenPosition( pos ,  p , time , callback ){
+
+        var i = { x: pos.x , y: pos.y , z: pos.z }
+
+        var f = { x: p.x , y: p.y , z: p.z }
+
+        var t = new TWEEN.Tween( i ).to( f , time );
+
+        t.onUpdate( function(){
+          pos.x = i.x;
+          pos.y = i.y;
+          pos.z = i.z;
+        });
+
+        t.onComplete( function(){
+          if( callback ) callback();
+        });
+
+        t.start();
+
+      }
+
+      
+      function onKeyDown( e ){
+
+        if( e.keyCode == 32 ){
+
+          if( inside == true ){
+            moveOutside();
+          }else{
+            moveInside();
+          }
+
+        }
+      }
+
+
+      function moveInside(){
+
+        tweenPosition( 
+          camera.position , 
+          {x: 0.591, y: 0.9359, z: 536.3535},
+          3000,
+          function(){
+            tweenPosition( 
+              camera.position , 
+              {x:0, y:0, z: 1.76 }, 
+              3000,
+              function(){
+                inside = true;
+              }
+            );
+          }
+        );
+
+      }
+
+      function moveOutside(){
+
+        tweenPosition( 
+          camera.position , 
+          {x: 0.591, y: 0.9359, z: 536.3535},
+          3000,
+          function(){
+            inside = false;
+          }
+        );
+
+      }
+
+    </script>
+
+  </body>
+</html>

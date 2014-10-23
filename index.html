@@ -1,0 +1,382 @@
+<html>
+
+  <head>
+    <style>
+
+      html{ background:#000 }
+      body{ 
+        margin: 0px;
+        font-family:"GeoSans";
+        font-size:22px;
+      }
+
+      #readme{
+
+        position:absolute;
+        top:0px;
+        left:0px;
+        color:#cccccc;
+        padding: 20px 5%;
+        width: 90%;
+      }
+
+      .fullCode{
+        background-color: rgba(255,255,255,.2);
+        width: 90%;
+        display: inline-block;
+        margin-left: 5%;
+      }
+
+      h1{
+        width:100%;
+        border-bottom:1px solid #333333;
+      } 
+      a{ 
+        color:#ffffff;
+        text-decoration:none;
+      }
+
+      a:hover{
+        color:#FF717E;
+        text-decoration:underline;
+      }
+
+      #demo{
+        position:fixed;
+      }
+
+
+      @font-face {
+        font-family: "GeoSans";
+        src: url("examples/lib/GeosansLight.ttf");
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div id="demo"></div>
+
+    <div id="readme">
+      <h1 id="shaderloader">ShaderLoader</h1>
+      <p>A Utility to help you keep your shaders in seperate files. 
+      Please open an issue if you see bugs / how to make things better!</p>
+      <p>If you make something using this, hit me up at isaaclandoncohen@gmail.com , or via twitter @Cabbibo</p>
+      <p>Also helps to keep long utility functions, such as simplex noise
+      out of shader files.</p>
+      <a href="http://github.com/cabbibo/ShaderLoader"> Link to Repo! </a>
+
+
+      <h1> Inspiration </h1>
+      <div id ="examples">
+        <a href="https://github.com/stackgl/glslify">
+          glslify
+        </a><br/>
+        <a href="https://github.com/cabbibo/wombs/blob/gh-pages/js/Wombs/Utils/Shaders/ShaderCreator.js">
+          old work done on wom.bs
+        </a><br/>
+
+        <a href="http://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader">
+          @thespite amazing Spherical Enviornment Mapping
+        </a><br/>
+
+      </div>
+
+
+
+      <h1> Examples </h1>
+      <div id ="examples">
+        <a href="examples/ads.html">Ambient Diffuse Specular Demo</a><br/>
+        <a href="examples/displacement.html">Simplex Noise Displacement Demo</a><br/>
+        <a href="examples/sem.html">Spherical Enviornment Mapping</a><br/>
+        <a href="examples/rainbow.html">Rainbow</a><br/>
+        <a href="examples/variLights.html"> Variable Number of Lights</a>
+      </div>
+
+      <h1> Demos using ShaderLoader </h1>
+      <div id ="examples">
+        <a href="http://cabbi.bo/webby/"> Webby </a><br/>
+        <a href="http://cabbi.bo/Skull/"> Skull </a><br/>
+        <a href="http://cabbi.bo/MagicalBoy/"> Magical Boy</a><br/>
+        <a href="http://cabbi.bo/weirdkids/"> Weird Kids </a><br/>
+        <a href="http://cabbi.bo/diamonds/"> Gimme Some </a><br/>
+        <a href="http://cabbi.bo/huldra/"> Huldra </a><br/>
+        <a href="http://cabbi.bo/beacon/"> Beacon </a><br/>
+      </div>
+
+      <h1 id="basic-usage">Basic Usage</h1>
+      <p>Include the neccesary scripts. Currently ShaderLoader uses jquery for AJAX calls. Sorry about that...</p>
+      <pre><code class="fullCode">
+      &lt;script src=&quot;path/to/ShaderLoader.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;path/to/jquery.min.js&quot;&gt;&lt;/script&gt;
+      </code></pre>
+
+      <p>Initialize the ShaderLoader:</p>
+      <pre><code class="fullCode">
+      var pathToShaders = 'path/to/shaders';
+      var pathToChunks  = 'path/to/chunks';
+      var shaders = new ShaderLoader( pathToShaders , pathToChunks );
+      </code></pre>
+
+      <p>Create your shaders!</p>
+      <pre><code class="fullCode">
+      var vertShader  = shaders.load( 'vert.glsl' , 'VERT'  , 'vertex'      );
+      var fragShader  = shaders.load( 'frag.glsl' , 'FRAG'  , 'fragment'    );
+      var simShader   = shaders.load( 'sim.glsl'  , 'SIM'   , 'simulation'  );
+      </code></pre>
+
+      <p>Once they are loaded they will become part of the <code>shaders</code> object,</p>
+      <pre><code class="fullCode">
+      var vert  = shaders.vertexShaders.VERT;
+      var frag  = shaders.fragmentShaders.FRAG;
+      var sim   = shaders.simulationShaders.SIM;
+      </code></pre>
+
+      <a href="http://github.com/cabbibo/ShaderLoader"> Link to Repo! </a>
+     
+      <h1 id="more-info">More Info</h1>
+
+      <h2 id="shorthand">Shorthand</h2>
+      <p>If you are as lazy as me, you hate writing fragmentShader possibly even more than I do. Because of this, there is some shorthand. Also it makes for neatly aligned vertical lines</p>
+      <pre><code class="fullCode">
+      // After code is loaded
+      var vert = shaders.vs.VERT;
+      var frag = shaders.fs.FRAG;
+      var sim  = shaders.ss.SIM;
+      </code></pre>
+      
+      <a href="http://github.com/cabbibo/ShaderLoader"> Link to Repo! </a>
+  
+      <h2 id="using-shader-chunks">Using Shader Chunks</h2>
+      <p>When creating a shader, you can add function defines that come from different files. It is important to note that ShaderLoader will look for the shader in the 'pathToChunks' directory. </p>
+      <pre><code class="fullCode">
+      // Inside frag.glsl
+      varying vec3 vPos;
+
+      // Will look for simplex.glsl in the 'pathToChunks' directory
+      $simplex
+
+      void main(){
+
+        float noise = simplex( vPos );
+        gl_FragColor = vec4( noise , 1.0 );
+
+      }
+      </code></pre>
+
+      <a href="http://github.com/cabbibo/ShaderLoader"> Link to Repo! </a>
+      
+      <h2 id="replacing-text-inside-shaders">Replacing Text Inside Shaders</h2>
+      <p>Sometimes when you have a shader, you will want to replace text, so that the shader knows a bit more about the actual object it is working with. This is especially important when you are doing simulations, so that each particle knows about every other particle. Because you cannot use uniforms to change the length of for loops in glsl, you need to specifically define it. To do this, all you need to do is provide a 'hook' inside of your shader using the '@' symbol</p>
+      <pre><code class="fullCode">
+      // Inside sim.glsl
+      const int size  = @SIZE;
+      </code></pre>
+
+      <p>Than, later in your code, when you know what you want the size to be, change it by using:</p>
+      <pre><code class="fullCode">
+      var st = 1;
+      var s = shaders.setValue( shaders.ss.SIM , 'SIZE' , st );
+      </code></pre>
+
+      <p>Remember that because of the fact that you need a '.' for floats, you may have to do something such as</p>
+      <pre><code class="fullCode">
+      // Inside sim.glsl
+      const float size  = @SIZE;
+
+      // Inside index.html
+      var st = 1 + &quot;.&quot;;
+      var s = shaders.setValue( shaders.ss.SIM , 'SIZE' , st );
+
+      </code></pre>
+
+      <p>If you have any ideas on how to make this better, let me know!!!</p>
+      <a href="http://github.com/cabbibo/ShaderLoader"> Link to Repo! </a>
+      
+      <h2 id="loading">Loading</h2>
+      <p>ShaderLoader will call a <code>beginLoad</code> and <code>endLoad</code> at the beginning and ending 
+      every shader load. Thus, if you've got a loading bar, you can rewrite these
+      functions, to do what you need for your loading needs.</p>
+      <p>Remember that you can also access the total number of shaders that the ShaderLoader 
+      has loaded by accessing the <code>shadersLoaded</code> attribute.</p>
+      <p>Additionally, everytime a new shader is loaded, the attribute <code>shadersToLoad</code> is incremented.</p>
+      <p>As well, if you want to, there is a function called <code>shaderSetLoaded</code> that you can change, 
+      which is called called when <code>this.shadersToLoad == this.shadersLoaded</code> .
+      This function works perfectly if you are loading all your shaders at once, but can get a bit hairy
+      if you are doing tso in different parts of your program</p>
+      <p>For example, if I want to wait until all the shaders are loaded to initialize my scene, I might do the following:</p>
+      <pre><code class="fullCode">
+      var shaders = new ShaderLoader( 'pathTo/Shaders' , 'pathTo/Chunks' );
+
+      shaders.shaderSetLoaded = function(){
+        init();
+      }
+
+      shaders.load( 'frag.glsl' , 'FRAGMORTION' , 'fragment'    );
+      shaders.load( 'vert.glsl' , 'VERTICAL'    , 'vertex'      );
+      shaders.load( 'sim.glsl'  , 'SIMULACRA'   , 'simulation'  );
+
+      // All Our Fancy Scene Stuff
+      function init(){}
+      </code></pre> 
+      <a href="http://github.com/cabbibo/ShaderLoader"> Link to Repo! </a>
+      
+    </div>
+
+
+
+
+    <script src="examples/lib/three.min.js"></script>
+    <script src="examples/lib/jquery.min.js"></script>
+    <script src="examples/lib/SubdivisionModifier.js"></script>
+    <script src="ShaderLoader.js"></script>
+
+    <script>
+
+
+      var displace , sem , rainbow;
+
+      var matcap = THREE.ImageUtils.loadTexture('examples/img/rough-aluminium.jpg');
+
+      var uniforms = {
+        time:{type:"f",value:0},
+        t_matcap:{ type:"t" , value: matcap }
+      }
+
+      var camera, renderer, scene , clock;
+      
+      var vs, fs;
+
+      var geometry, material , light;
+
+
+      var shaders = new ShaderLoader( 'shaders' , 'shaderChunks' );
+
+      shaders.load( 'vs-displacement' , 'displacement' , 'vertex' );
+      shaders.load( 'fs-displacement' , 'displacement' , 'fragment' );
+      shaders.load( 'vs-sem' , 'sem' , 'vertex' );
+      shaders.load( 'fs-sem' , 'sem' , 'fragment' );
+      shaders.load( 'vs-rainbow' , 'rainbow' , 'vertex' );
+      shaders.load( 'fs-rainbow' , 'rainbow' , 'fragment' );
+
+      shaders.shaderSetLoaded = function(){
+
+        init();
+        animate();
+
+      }
+
+      function init(){
+
+        var demo = document.getElementById("demo");
+
+        var w = window.innerWidth;
+
+        var h = window.innerHeight;
+
+        clock = new THREE.Clock();
+
+        camera = new THREE.PerspectiveCamera( 65 , w/h , 1 , 2000 );
+        camera.position.z = 500;
+        camera.position.x = -200;
+        //camera.position.y = 200;
+
+        scene = new THREE.Scene();
+      
+        geometry = new THREE.IcosahedronGeometry( 200, 6 );
+        geometry.computeVertexNormals();
+        
+        material = new THREE.ShaderMaterial({
+
+          uniforms:uniforms,
+          vertexShader:   shaders.vertexShaders.displacement,
+          fragmentShader: shaders.fragmentShaders.displacement,
+
+        });
+
+
+        displace = new THREE.Mesh( geometry, material );
+
+        var modifier = new THREE.SubdivisionModifier( 3 );
+
+        geometry = new THREE.BoxGeometry( 200, 200 , 200 , 10 , 10 , 10 );
+        geometry.computeVertexNormals();
+
+        geometry.mergeVertices();
+        geometry.computeFaceNormals();
+        geometry.computeVertexNormals();
+
+        modifier.modify( geometry );
+        
+        material = new THREE.ShaderMaterial({
+
+          uniforms:       uniforms,
+          vertexShader:   shaders.vertexShaders.rainbow,
+          fragmentShader: shaders.fragmentShaders.rainbow,
+
+        });
+
+        rainbow = new THREE.Mesh( geometry,  material );
+
+        rainbow.rotation.y = Math.PI / 4;
+        var modifier = new THREE.SubdivisionModifier( 4 );
+
+        geometry = new THREE.BoxGeometry( 300, 300 , 300  );
+        geometry.computeVertexNormals();
+
+        geometry.mergeVertices();
+        geometry.computeFaceNormals();
+        geometry.computeVertexNormals();
+
+        modifier.modify( geometry );
+        
+        material = new THREE.ShaderMaterial({
+
+          uniforms:       uniforms,
+          vertexShader:   shaders.vertexShaders.sem,
+          fragmentShader: shaders.fragmentShaders.sem,
+
+        });
+
+        sem = new THREE.Mesh( geometry,  material );
+
+        var r = Math.random();
+
+        if( r < .3 ){
+          scene.add( rainbow );
+        }else if( r > .3 && r < .6 ){
+          scene.add( sem );
+        }else{
+          scene.add( displace );
+        }
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( w , h );
+
+
+        var mousewheel = function( e ){
+
+          sem.rotation.x += e.wheelDeltaY / 1000;
+          rainbow.rotation.x += e.wheelDeltaY / 1000;
+          displace.rotation.x += e.wheelDeltaY / 1000;
+        
+        }
+      
+         window.addEventListener( 'mousewheel', mousewheel, false );
+
+
+        demo.appendChild( renderer.domElement );
+
+      }
+
+      function animate(){
+
+        uniforms.time.value += clock.getDelta();
+        requestAnimationFrame( animate );
+        renderer.render( scene , camera );
+      }
+
+    </script>
+
+  </body>
+</html>
